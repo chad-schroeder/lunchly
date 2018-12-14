@@ -51,11 +51,18 @@ router.get('/add/', async function(req, res, next) {
 router.post('/add/', async function(req, res, next) {
   try {
     const firstName = req.body.firstName;
+    const middleName = req.body.middleName;
     const lastName = req.body.lastName;
     const phone = req.body.phone;
     const notes = req.body.notes;
 
-    const customer = new Customer({ firstName, lastName, phone, notes });
+    const customer = new Customer({
+      firstName,
+      middleName,
+      lastName,
+      phone,
+      notes
+    });
     await customer.save();
 
     return res.redirect(`/${customer.id}/`);
@@ -95,11 +102,18 @@ router.get('/:id/edit/', async function(req, res, next) {
 router.post('/:id/edit/', async function(req, res, next) {
   try {
     const firstName = req.body.firstName;
+    const middleName = req.body.middleName;
     const lastName = req.body.lastName;
     const phone = req.body.phone;
     const notes = req.body.notes;
 
-    const customer = new Customer({ firstName, lastName, phone, notes });
+    const customer = new Customer({
+      firstName,
+      middleName,
+      lastName,
+      phone,
+      notes
+    });
     await customer.save();
 
     return res.redirect(`/${customer.id}/`);

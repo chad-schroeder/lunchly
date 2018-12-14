@@ -44,13 +44,15 @@ class Customer {
 
   static async all() {
     const results = await db.query(
-      `SELECT id, 
+      `SELECT c.id, 
          first_name AS "firstName",  
+         middle_name AS "middleName",
          last_name AS "lastName", 
          phone, 
-         notes
-       FROM customers
-       ORDER BY last_name, first_name`
+         c.notes
+       FROM customers as c
+       JOIN reservations ON c.id = customer_id
+       ORDER BY start_at DESC`
     );
     return results.rows.map(c => new Customer(c));
   }
@@ -60,11 +62,12 @@ class Customer {
     const results = await db.query(
       `SELECT id, 
       first_name AS "firstName",  
+      middle_name AS "middleName",
       last_name AS "lastName", 
       phone, 
       notes 
      FROM customers
-     WHERE UPPER(first_name) = $1 OR UPPER(last_name) = $1`,
+     WHERE UPPER(first_name) = $1 OR UPPER(middle_name) = $1 OR UPPER(last_name) = $1`,
       [name.toUpperCase()]
     );
     return results.rows.map(c => new Customer(c));
@@ -74,10 +77,10 @@ class Customer {
   static async topTen() {
     const results = await db.query(
       `
-      SELECT c.id, first_name AS "firstName", last_name AS "lastName", phone, c.notes, customer_id, COUNT(*) 
+      SELECT c.id, first_name AS "firstName", middle_name AS "middleName", last_name AS "lastName", phone, c.notes, customer_id, COUNT(*) 
       FROM customers as c 
       JOIN reservations ON c.id = customer_id
-      GROUP BY c.id, first_name, last_name, phone, c.notes, customer_id
+      GROUP BY c.id, first_name, middle_name, last_name, phone, c.notes, customer_id
       ORDER BY COUNT(*) DESC
       LIMIT 10
       `
@@ -92,6 +95,7 @@ class Customer {
     const results = await db.query(
       `SELECT id, 
          first_name AS "firstName",  
+         middle_name AS "middleName",
          last_name AS "lastName", 
          phone, 
          notes 
@@ -121,17 +125,24 @@ class Customer {
   async save() {
     if (this.id === undefined) {
       const result = await db.query(
-        `INSERT INTO customers (first_name, last_name, phone, notes)
-             VALUES ($1, $2, $3, $4)
+        `INSERT INTO customers (first_name, middle_name, last_name, phone, notes)
+             VALUES ($1, $2, $3, $4, $5)
              RETURNING id`,
-        [this.firstName, this.lastName, this.phone, this.notes]
+        [this.firstName, this.middleName, this.lastName, this.phone, this.notes]
       );
       this.id = result.rows[0].id;
     } else {
       await db.query(
-        `UPDATE customers SET first_name=$1, last_name=$2, phone=$3, notes=$4)
-             WHERE id=$5`,
-        [this.firstName, this.lastName, this.phone, this.notes, this.id]
+        `UPDATE customers SET first_name=$1, middle_name=$2 last_name=$3, phone=$4, notes=$5)
+             WHERE id=$6`,
+        [
+          this.firstName,
+          this.middleName,
+          this.lastName,
+          this.phone,
+          this.notes,
+          this.id
+        ]
       );
     }
   }

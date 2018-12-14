@@ -42,6 +42,10 @@ class Reservation {
     return moment(this.startAt).format('MMMM Do YYYY, h:mm a');
   }
 
+  get prettierStartAt() {
+    return moment(this.startAt).fromNow();
+  }
+
   /** methods for setting/getting notes (keep as a blank string, not NULL) */
 
   set notes(val) {
